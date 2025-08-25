@@ -8,7 +8,7 @@ const InputArea = () => {
   const [isRecording, setIsRecording] = useState(false);
   const recognitionRef = useRef(null);
   const { user } = useContext(AuthContext);
-  const BACKEND_URL = 'http://localhost:5000'; // From env or config
+  const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000'; // From env or config
   const [displayMessage, setDisplayMessage] = useState(null); // State for AI response/feedback
   const [messageType, setMessageType] = useState(null); // 'success', 'error', or 'warning'
   const [calendarEvents, setCalendarEvents] = useState([]); // State for displaying a list of events
