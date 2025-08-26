@@ -21,8 +21,6 @@ app.use('/auth', authRoutes);
 app.use('/api', calendarRoutes); // Mount calendar routes under /api
 
 // Basic test route
-app.get('/', (req, res) => {
-  res.send('VoiceCalendar Backend is running (MVC - Direct OAuth)!');
-});
+
 
 module.exports = app;
