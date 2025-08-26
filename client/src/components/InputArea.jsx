@@ -14,6 +14,7 @@ const InputArea = () => {
   const [calendarEvents, setCalendarEvents] = useState([]); // State for displaying a list of events
   const [overlappingEvents, setOverlappingEvents] = useState([]); // New state for overlapping events
   const [pendingSuggestion, setPendingSuggestion] = useState(null); // To store suggestion during overlap confirmation
+  const [isSpeechRecognitionSupported, setIsSpeechRecognitionSupported] = useState(true); // New state for speech recognition support
 
   // Removed useEffect to clear message after 5 seconds for persistent display.
 
@@ -50,6 +51,7 @@ const InputArea = () => {
       };
     } else {
       console.warn('Web Speech API not supported in this browser.');
+      setIsSpeechRecognitionSupported(false); // Set support to false
     }
 
     return () => {
@@ -300,12 +302,26 @@ const InputArea = () => {
               <FaPaperPlane className="text-xl" />
             </button>
           )}
-          <button
-            onClick={toggleRecording}
-            className={`p-2 ${isRecording ? 'text-red-500 hover:text-red-700' : 'text-gray-600 hover:text-blue-500'} transition-colors duration-200 focus:outline-none`}
-          >
-            {isRecording ? <FaStopCircle className="text-xl" /> : <FaMicrophone className="text-xl" />}
-          </button>
+          {isSpeechRecognitionSupported ? (
+            <button
+              onClick={toggleRecording}
+              className={`p-2 ${isRecording ? 'text-red-500 hover:text-red-700' : 'text-gray-600 hover:text-blue-500'} transition-colors duration-200 focus:outline-none`}
+            >
+              {isRecording ? <FaStopCircle className="text-xl" /> : <FaMicrophone className="text-xl" />}
+            </button>
+          ) : (
+            <div className="relative group">
+              <button
+                className="p-2 text-gray-400 cursor-not-allowed"
+                disabled
+              >
+                <FaMicrophone className="text-xl" />
+              </button>
+              <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 text-sm text-white bg-gray-700 rounded-md whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+                Voice input not supported in this browser
+              </span>
+            </div>
+          )}
         </div>
       </div>
     </div>
