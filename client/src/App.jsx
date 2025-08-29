@@ -24,7 +24,6 @@ function App() {
     return (
       <div className="flex flex-col min-h-screen items-center justify-center text-foreground bg-background">
         <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-primary"></div>
-        <p className="mt-4 text-lg">Loading authentication...</p>
       </div>
     );
   }
