@@ -1,13 +1,13 @@
 import React, { useContext, useState } from 'react';
 import { FaRegCalendarAlt } from 'react-icons/fa';
-import { AuthContext } from '../context/AuthContext'; // Import AuthContext
+import { AuthContext } from '../context/AuthContext';
 
 const HeroSection = ({ isAuthenticated }) => {
-  const { login } = useContext(AuthContext); // Use AuthContext to get login function
-  const [showLearnMore, setShowLearnMore] = useState(false); // State for Learn More pop-up
+  const { login } = useContext(AuthContext);
+  const [showLearnMore, setShowLearnMore] = useState(false);
 
   const handleGetStarted = () => {
-    login(); // Call login function
+    login();
   };
 
   const handleLearnMore = () => {
@@ -19,58 +19,63 @@ const HeroSection = ({ isAuthenticated }) => {
   };
 
   return (
-    <section className="flex flex-col items-center justify-center flex-grow p-4 text-center bg-white text-gray-900">
-      {/* Calendar icon with sparkle */}
-      <div className="relative mb-10 mt-16">
-        <FaRegCalendarAlt className="text-8xl text-gray-800" />
-        <span className="absolute top-0 right-0 -mt-3 -mr-3 text-3xl animate-pulse text-yellow-500">✨</span>
-      </div>
-      <h1 className="text-6xl font-extrabold mb-6 leading-tight">Make Your Calendar in a Second</h1>
-      <p className="text-xl text-gray-600 mb-8 max-w-3xl leading-relaxed">
-        Create calendar events effortlessly using your voice or text. Just speak naturally
-        or type your plans, and we'll handle the rest.
-      </p>
-      <div className="flex space-x-4 mb-8">
-        {!isAuthenticated && (
+    <section className="relative bg-gradient-to-br from-background via-blue-50 to-background text-foreground py-20 px-4 sm:px-6 lg:px-8 flex flex-col items-center justify-center min-h-[calc(100vh-80px)] text-center overflow-hidden">
+      {/* Background blobs for visual interest */}
+      <div className="absolute top-0 left-0 w-72 h-72 bg-blue-300 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob"></div>
+      <div className="absolute bottom-0 right-0 w-72 h-72 bg-accent rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob animation-delay-2000"></div>
+
+      <div className="relative z-10 max-w-4xl mx-auto">
+        {/* Calendar icon with sparkle */}
+        <div className="relative mb-8">
+          <FaRegCalendarAlt className="text-8xl sm:text-9xl text-primary mx-auto animate-bounce-slow" />
+          <span className="absolute top-0 right-0 -mt-3 -mr-3 text-4xl animate-pulse text-accent">✨</span>
+        </div>
+        <h1 className="text-5xl sm:text-7xl font-extrabold mb-6 leading-tight tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-primary">
+        Talk or Type. Get Your Calendar Done.
+        </h1>
+        <p className="text-lg sm:text-xl text-muted-foreground mb-10 max-w-2xl mx-auto leading-relaxed">
+          Transform your voice and text commands into perfectly organized Google Calendar events. Effortless scheduling, powered by AI.
+        </p>
+        <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 mb-12 justify-center">
+          {!isAuthenticated && (
+            <button
+              onClick={handleGetStarted}
+              className="px-10 py-4 bg-primary text-primary-foreground rounded-full text-xl font-bold shadow-lg hover:shadow-xl transition-transform transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-primary focus:ring-opacity-50"
+            >
+              Get Started
+            </button>
+          )}
           <button
-            onClick={handleGetStarted} // Attach handler
-            className="px-8 py-4 bg-gray-900 text-white rounded-xl flex items-center space-x-3 text-lg font-semibold shadow-lg transition-transform transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50"
+            onClick={handleLearnMore}
+            className="px-10 py-4 border-2 border-primary text-primary rounded-full text-xl font-bold bg-transparent shadow-md hover:bg-primary hover:text-primary-foreground hover:shadow-xl transition-all transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-primary focus:ring-opacity-50"
           >
-            <FaRegCalendarAlt className="text-xl" />
-            <span>Get Started</span>
+            Learn More
           </button>
-        )}
-        <button
-          onClick={handleLearnMore} // Attach handler
-          className="px-8 py-4 border border-gray-300 text-gray-800 rounded-xl text-lg font-semibold shadow-md transition-transform transform hover:scale-105 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-opacity-50"
-        >
-          Learn More
-        </button>
+        </div>
       </div>
 
       {/* Learn More Pop-up (Modal) */}
       {showLearnMore && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-8 rounded-lg shadow-xl max-w-md w-full m-4 relative">
+        <div className="fixed inset-0 bg-background bg-opacity-80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-card text-card-foreground p-8 rounded-2xl shadow-2xl max-w-md w-full m-4 relative border border-border transform transition-all scale-100 opacity-100 ease-out duration-300">
             <button
               onClick={handleCloseLearnMore}
-              className="absolute top-3 right-3 text-gray-500 hover:text-gray-700 text-2xl font-bold leading-none focus:outline-none"
+              className="absolute top-4 right-4 text-muted-foreground hover:text-foreground text-3xl font-bold leading-none focus:outline-none"
             >
               &times;
             </button>
-            <h2 className="text-3xl font-bold mb-4 text-gray-900">How to Use VoiceCalendar</h2>
-            <p className="text-gray-700 mb-4">
-              VoiceCalendar allows you to create and manage Google Calendar events using natural language.
-              Simply type or speak your request, and our AI will handle the rest.
+            <h2 className="text-4xl font-extrabold mb-4 text-primary">How VoiceCalendar Works</h2>
+            <p className="text-lg text-muted-foreground mb-6">
+              VoiceCalendar intelligently transforms your natural language into Google Calendar events and insights.
             </p>
-            <h3 className="text-2xl font-semibold mb-2 text-gray-800">Key Features:</h3>
-            <ul className="list-disc list-inside text-left text-gray-700 mb-4 space-y-1">
-              <li>Create one-time events: "Schedule a meeting tomorrow at 3 PM about project launch."</li>
-              <li>Create recurring events: "Set up a daily reminder for 9 AM for the next 5 days to check emails."</li>
-              <li>View upcoming events: "What's on my calendar today?" or "Show me events for next week."</li>
+            <h3 className="text-2xl font-bold mb-3 text-foreground">Key Capabilities:</h3>
+            <ul className="list-disc list-inside text-left text-muted-foreground mb-6 space-y-2 text-lg">
+              <li><span className="font-semibold">Create Events:</span> "Schedule a meeting for tomorrow at 3 PM about project launch."</li>
+              <li><span className="font-semibold">Recurring Events:</span> "Set a daily reminder for 9 AM for the next 5 days to check emails."</li>
+              <li><span className="font-semibold">View Schedule:</span> "What's on my calendar today?" or "Show me events for next week."</li>
             </ul>
-            <p className="text-gray-700">
-              Get started by logging in with your Google account and speaking or typing your first calendar command!
+            <p className="text-lg text-foreground">
+              Connect your Google account and experience the future of personal scheduling!
             </p>
           </div>
         </div>

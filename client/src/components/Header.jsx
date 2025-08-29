@@ -1,5 +1,5 @@
 import React, { useContext } from 'react';
-import { FaRegCalendarAlt, FaArrowRight } from 'react-icons/fa';
+import { FaRegCalendarAlt, FaArrowRight, FaSignOutAlt } from 'react-icons/fa'; // Added FaSignOutAlt for logout icon
 import { AuthContext } from '../context/AuthContext';
 
 const Header = () => {
@@ -14,17 +14,18 @@ const Header = () => {
   };
 
   return (
-    <header className="flex items-center justify-between p-6 bg-white shadow-sm">
+    <header className="relative z-40 w-full bg-gradient-to-r from-primary to-blue-700 shadow-lg text-primary-foreground p-4 sm:p-6 flex items-center justify-between">
       <div className="flex items-center space-x-3">
-        <FaRegCalendarAlt className="text-2xl text-gray-800" />
-        <span className="text-2xl font-semibold text-gray-800">VoiceCalendar</span>
+        <FaRegCalendarAlt className="text-3xl sm:text-4xl" />
+        <span className="text-2xl sm:text-3xl font-extrabold tracking-tight">VoiceCalendar</span>
       </div>
       <button
         onClick={handleLogin}
-        className="px-5 py-2 bg-gray-900 text-white rounded-lg flex items-center space-x-2 transition-colors duration-200 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50"
+        className="px-4 py-2 sm:px-6 sm:py-3 bg-primary-foreground text-primary rounded-full font-semibold shadow-md hover:shadow-lg transition-all duration-300 ease-in-out flex items-center space-x-2 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-opacity-75 transform hover:scale-105"
       >
         {isAuthenticated ? (
           <>
+            <FaSignOutAlt className="text-lg" />
             <span>Logout</span>
           </>
         ) : (

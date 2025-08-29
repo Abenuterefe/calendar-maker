@@ -27,7 +27,7 @@ async function getAIEventSuggestion(userText) {
     }
 
     Rules:
-    -if the user asks to create an event at the past days since that is impossible return status: false and feedback explaining why.
+    -if the user asks to create an event at the past days since that is impossible return status: false and feedback explaining why.and also tha padt time is impossible.for example one hour ago or even one minute ago.
     - If the request is irrelevant (not about calendar events), return status: false and feedback explaining why.
     - If time is vague/missing (like 'today' or 'tomorrow' without hours) for a 'create' action, return status: false with feedback "Please provide specific time for the event."
     - If the user asks for a recurring event (e.g., "for the next 10 days"), set recurrenceCount to the specified number of days. Default to 1 if not specified.

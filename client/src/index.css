@@ -1,3 +1,48 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  :root {
+    /* Color Palette */
+    --background: 0 0% 100%; /* White */
+    --foreground: 222.2 47.4% 11.2%; /* Dark Blue-Gray */
+    --primary: 220 90% 55%; /* A vibrant blue */
+    --primary-foreground: 0 0% 100%; /* White */
+    --secondary: 210 40% 96.1%; /* Light Gray-Blue */
+    --secondary-foreground: 222.2 47.4% 11.2%; /* Dark Blue-Gray */
+    --accent: 38 92% 50%; /* A warm yellow-orange */
+    --accent-foreground: 222.2 47.4% 11.2%; /* Dark Blue-Gray */
+    --card: 0 0% 100%; /* White */
+    --card-foreground: 222.2 47.4% 11.2%; /* Dark Blue-Gray */
+    --border: 214.3 31.8% 91.4%; /* Light Gray */
+    --input: 214.3 31.8% 91.4%; /* Light Gray */
+    --ring: 220 90% 55%; /* Primary blue for focus rings */
+    --destructive: 0 84.2% 60.2%; /* Red */
+    --destructive-foreground: 0 0% 100%; /* White */
+    --muted: 210 40% 96.1%; /* Lighter gray */
+    --muted-foreground: 215.4 16.3% 46.9%; /* Medium Gray */
+
+    /* Typography */
+    --font-sans: 'Inter', sans-serif;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    @apply text-foreground bg-background; /* Use defined theme colors */
+  }
+
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+}

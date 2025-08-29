@@ -1,25 +1,23 @@
 import React, { useState, useRef, useEffect, useContext } from 'react';
-import { FaMicrophone, FaPaperPlane, FaStopCircle, FaExclamationTriangle, FaTimesCircle } from 'react-icons/fa'; // Added FaTimesCircle for error
+import { FaMicrophone, FaPaperPlane, FaStopCircle, FaExclamationTriangle, FaTimesCircle, FaTimes, FaCheckCircle } from 'react-icons/fa';
 import axios from 'axios';
 import { AuthContext } from '../context/AuthContext';
 
 const InputArea = () => {
   const [message, setMessage] = useState('');
   const [isRecording, setIsRecording] = useState(false);
+  const [isInputExpanded, setIsInputExpanded] = useState(false);
   const recognitionRef = useRef(null);
   const { user } = useContext(AuthContext);
-  const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000'; // From env or config
-  const [displayMessage, setDisplayMessage] = useState(null); // State for AI response/feedback
-  const [messageType, setMessageType] = useState(null); // 'success', 'error', or 'warning'
-  const [calendarEvents, setCalendarEvents] = useState([]); // State for displaying a list of events
-  const [overlappingEvents, setOverlappingEvents] = useState([]); // New state for overlapping events
-  const [pendingSuggestion, setPendingSuggestion] = useState(null); // To store suggestion during overlap confirmation
-  const [isSpeechRecognitionSupported, setIsSpeechRecognitionSupported] = useState(true); // New state for speech recognition support
-
-  // Removed useEffect to clear message after 5 seconds for persistent display.
+  const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
+  const [displayMessage, setDisplayMessage] = useState(null);
+  const [messageType, setMessageType] = useState(null);
+  const [calendarEvents, setCalendarEvents] = useState([]);
+  const [overlappingEvents, setOverlappingEvents] = useState([]);
+  const [pendingSuggestion, setPendingSuggestion] = useState(null);
+  const [isSpeechRecognitionSupported, setIsSpeechRecognitionSupported] = useState(true);
 
   useEffect(() => {
-    // Existing Speech Recognition setup
     if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
       recognitionRef.current = new SpeechRecognition();
@@ -51,7 +49,7 @@ const InputArea = () => {
       };
     } else {
       console.warn('Web Speech API not supported in this browser.');
-      setIsSpeechRecognitionSupported(false); // Set support to false
+      setIsSpeechRecognitionSupported(false);
     }
 
     return () => {
@@ -69,15 +67,15 @@ const InputArea = () => {
   };
 
   const handleSendMessage = async (options = {}) => {
-    if (!message.trim() && !pendingSuggestion) return; 
-    
+    if (!message.trim() && !pendingSuggestion) return;
+
     let requestBody;
     if (pendingSuggestion && options.overrideOverlap) {
-      requestBody = { ...pendingSuggestion, overrideOverlap: true }; // Flatten pendingSuggestion directly into requestBody
-      setMessage(''); // Clear current message input if overriding
+      requestBody = { ...pendingSuggestion, overrideOverlap: true };
+      setMessage('');
     } else if (message.trim()) {
       requestBody = { text: message.trim() };
-      setMessage(''); // Clear after sending initial text
+      setMessage('');
     } else {
       return;
     }
@@ -103,7 +101,6 @@ const InputArea = () => {
         }
       );
 
-      // Clear pending suggestion and overlapping events after a response
       setPendingSuggestion(null);
       setOverlappingEvents([]);
 
@@ -123,27 +120,23 @@ const InputArea = () => {
           setMessageType('success');
         }
       } else {
-        // Handle overlap confirmation request from backend
         if (response.data.action === "confirm_create") {
           setDisplayMessage(response.data.feedback);
-          setMessageType('warning'); // Use a warning type for overlap message
+          setMessageType('warning');
           setOverlappingEvents(response.data.overlappingEvents || []);
-          setPendingSuggestion(response.data.suggestion); // Store the full AI suggestion for re-submission
+          setPendingSuggestion(response.data.suggestion);
         } else {
-          // General failure / AI non-calendar related feedback
           setDisplayMessage(response.data.feedback || `Failed to process request: Unknown error`);
           setMessageType('error');
           console.warn('Failed to process request:', response.data.feedback);
         }
       }
     } catch (error) {
-      // Network or unhandled error
       const errorMessage = error.response?.data?.feedback || error.message;
       setDisplayMessage(`Error processing request: ${errorMessage}`);
       setMessageType('error');
       console.error('Error sending message to backend:', error);
     }
-    // Note: setMessage('') is now handled inside success/override blocks where appropriate
   };
 
   const toggleRecording = () => {
@@ -160,45 +153,63 @@ const InputArea = () => {
     setMessageType(null);
     setOverlappingEvents([]);
     setPendingSuggestion(null);
-    setMessage(''); // Clear the input field as well
+    setMessage('');
   };
 
   const handleDismissMessage = () => {
     setDisplayMessage(null);
     setMessageType(null);
     setCalendarEvents([]);
-    setOverlappingEvents([]); // Clear any remaining overlap data
-    setPendingSuggestion(null); // Clear any remaining pending suggestion
+    setOverlappingEvents([]);
+    setPendingSuggestion(null);
+  };
+
+  const handleExpandInput = () => {
+    setIsInputExpanded(true);
+  };
+
+  const handleCollapseInput = () => {
+    setIsInputExpanded(false);
+    setIsRecording(false);
+    if (recognitionRef.current && isRecording) {
+      recognitionRef.current.stop();
+    }
+    setMessage('');
   };
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-gray-200 flex flex-col items-center justify-center z-10">
+    <div className={`fixed z-50 transition-all duration-300 ease-in-out transform 
+      ${isInputExpanded 
+        ? 'bottom-4 left-1/2 -translate-x-1/2 w-full max-w-lg h-auto bg-card rounded-2xl shadow-xl p-4 border border-border' 
+        : 'bottom-4 right-4 w-16 h-16'
+      }
+    `}>
       {/* Overlap Confirmation Pop-up */}
       {overlappingEvents.length > 0 && pendingSuggestion && (
-        <div className="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50 p-4 sm:p-0">
-          <div className="bg-white rounded-xl shadow-2xl p-6 sm:p-8 max-w-lg w-full relative transform transition-all scale-100 opacity-100 ease-out duration-300">
+        <div className="fixed inset-0 bg-background bg-opacity-80 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-card rounded-2xl shadow-2xl p-6 sm:p-8 max-w-lg w-full relative border border-border transform transition-all scale-100 opacity-100 ease-out duration-300 max-h-[90vh] flex flex-col justify-between">
             <button
               onClick={handleCancelOverlap}
-              className="absolute top-3 right-3 text-gray-400 hover:text-gray-600 transition-colors duration-200 text-2xl font-bold leading-none focus:outline-none"
+              className="absolute top-4 right-4 text-muted-foreground hover:text-foreground transition-colors duration-200 text-3xl font-bold leading-none focus:outline-none"
             >
               &times;
             </button>
-            <div className="text-center mb-6">
-              <FaExclamationTriangle className="text-yellow-500 text-6xl mx-auto mb-4" />
-              <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 mb-2">Conflicting Event Detected!</h2>
-              <p className="text-lg text-gray-700">It looks like you already have an event scheduled at this time.</p>
+            <div className="text-center mb-6 flex-shrink-0">
+              <FaExclamationTriangle className="text-accent text-6xl mx-auto mb-4" />
+              <h2 className="text-2xl sm:text-3xl font-extrabold text-foreground mb-2">Conflicting Event Detected!</h2>
+              <p className="text-lg text-muted-foreground">It looks like you already have an event scheduled at this time.</p>
             </div>
             
-            <div className="mb-6 p-4 bg-yellow-50 rounded-lg border border-yellow-200">
-              <p className="font-semibold text-yellow-800 text-base mb-2">Your proposed event:</p>
-              <p className="text-sm text-yellow-700 mb-2"><strong>{pendingSuggestion.summary}</strong> at {new Date(pendingSuggestion.dateTime).toLocaleString()}</p>
-              <p className="font-semibold text-yellow-800 text-base mb-2">Conflicting with:</p>
+            <div className="mb-6 p-4 bg-secondary rounded-xl border border-border flex-grow overflow-y-auto">
+              <p className="font-semibold text-foreground text-base mb-2">Your proposed event:</p>
+              <p className="text-sm text-muted-foreground mb-4"><strong>{pendingSuggestion.summary}</strong> at {new Date(pendingSuggestion.dateTime).toLocaleString()}</p>
+              <p className="font-semibold text-foreground text-base mb-2">Conflicting with:</p>
               <ul className="list-disc list-inside text-left space-y-1">
                 {overlappingEvents.map((event, index) => {
                   const startTime = new Date(event.start.dateTime || event.start.date).toLocaleString();
                   const endTime = new Date(event.end.dateTime || event.end.date).toLocaleString();
                   return (
-                    <li key={index} className="text-gray-700 text-sm">
+                    <li key={index} className="text-muted-foreground text-sm">
                       <span className="font-medium">{event.summary}</span> ({startTime} - {endTime})
                     </li>
                   );
@@ -206,18 +217,18 @@ const InputArea = () => {
               </ul>
             </div>
 
-            <p className="text-center text-gray-800 mb-6 text-lg font-medium">Do you want to create this event anyway?</p>
+            <p className="text-center text-foreground mb-6 text-lg font-medium flex-shrink-0">Do you want to create this event anyway?</p>
 
-            <div className="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4">
+            <div className="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4 flex-shrink-0">
               <button
                 onClick={() => handleSendMessage({ overrideOverlap: true })}
-                className="w-full sm:w-auto px-6 py-3 bg-yellow-500 text-white font-bold rounded-lg shadow-md hover:bg-yellow-600 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-opacity-75"
+                className="w-full sm:w-auto px-6 py-3 bg-accent text-primary-foreground font-bold rounded-xl shadow-md hover:bg-yellow-600 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-accent focus:ring-opacity-75"
               >
                 <FaPaperPlane className="inline-block mr-2" /> Create Anyway
               </button>
               <button
                 onClick={handleCancelOverlap}
-                className="w-full sm:w-auto px-6 py-3 bg-gray-200 text-gray-800 font-bold rounded-lg shadow-md hover:bg-gray-300 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-75"
+                className="w-full sm:w-auto px-6 py-3 bg-secondary text-foreground font-bold rounded-xl shadow-md hover:bg-muted-foreground transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-border focus:ring-opacity-75"
               >
                 Cancel
               </button>
@@ -229,44 +240,46 @@ const InputArea = () => {
       {/* General Message Display (Success/Error/Warning - when no overlap pop-up is active) */}
       {displayMessage && overlappingEvents.length === 0 && (
         <div
-          className={`mb-4 p-4 rounded-lg shadow-lg w-full max-w-3xl text-center whitespace-pre-wrap transition-opacity duration-500 relative flex items-center justify-center space-x-3
-            ${messageType === 'success' ? 'bg-green-100 text-green-800' : messageType === 'warning' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'}`}
+          className={`fixed bottom-28 left-1/2 -translate-x-1/2 p-4 rounded-xl shadow-lg w-full max-w-md text-center whitespace-pre-wrap transition-opacity duration-500 relative flex items-center justify-center space-x-3 z-50
+            ${messageType === 'success' ? 'bg-green-100 text-green-800' : messageType === 'warning' ? 'bg-accent/20 text-accent-foreground' : 'bg-destructive text-destructive-foreground'}`}
         >
-          {messageType === 'error' && <FaTimesCircle className="text-2xl text-red-700" />}
+          {messageType === 'error' && <FaTimesCircle className="text-2xl text-destructive mr-2" />}
+          {messageType === 'warning' && <FaExclamationTriangle className="text-2xl text-accent mr-2" />}
+          {messageType === 'success' && <FaCheckCircle className="text-2xl text-green-700 mr-2" />}
           <span dangerouslySetInnerHTML={{ __html: displayMessage }} className="text-lg font-medium" />
           <button
-            onClick={handleDismissMessage} // Use new dismiss handler
-            className="absolute top-1 right-1 p-1 text-gray-600 hover:text-gray-900 focus:outline-none"
+            onClick={handleDismissMessage}
+            className="absolute top-2 right-2 p-1 text-muted-foreground hover:text-foreground focus:outline-none"
           >
-            &times;
+            <FaTimes className="text-xl" />
           </button>
         </div>
       )}
       {/* Calendar Events Display Pop-up */}
       {calendarEvents.length > 0 && (
-        <div className="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50 p-4 sm:p-0">
-          <div className="bg-white rounded-xl shadow-2xl p-6 sm:p-8 max-w-lg w-full relative transform transition-all scale-100 opacity-100 ease-out duration-300 max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-background bg-opacity-80 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-card rounded-2xl shadow-2xl p-6 sm:p-8 max-w-lg w-full relative border border-border transform transition-all scale-100 opacity-100 ease-out duration-300 max-h-[90vh] flex flex-col">
             <button
               onClick={() => { setDisplayMessage(null); setMessageType(null); setCalendarEvents([]); handleDismissMessage(); }}
-              className="absolute top-3 right-3 text-gray-400 hover:text-gray-600 transition-colors duration-200 text-2xl font-bold leading-none focus:outline-none"
+              className="absolute top-4 right-4 text-muted-foreground hover:text-foreground transition-colors duration-200 text-3xl font-bold leading-none focus:outline-none"
             >
               &times;
             </button>
             <div className="text-center mb-6">
-              <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 mb-2">Your Upcoming Events</h2>
-              <p className="text-lg text-gray-700">Here's what's on your calendar:</p>
+              <h2 className="text-2xl sm:text-3xl font-extrabold text-primary mb-2">Your Upcoming Events</h2>
+              <p className="text-lg text-muted-foreground">Here's what's on your calendar:</p>
             </div>
             
-            <div className="mb-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+            <div className="mb-6 p-4 bg-secondary rounded-xl border border-border flex-grow overflow-y-auto">
               <ul className="list-none text-left space-y-4">
                 {calendarEvents.map((event, index) => {
                   const startTime = new Date(event.start.dateTime || event.start.date).toLocaleString();
                   const endTime = new Date(event.end.dateTime || event.end.date).toLocaleString();
                   return (
-                    <li key={index} className="pb-2 border-b border-blue-200 last:border-b-0">
-                      <p className="font-semibold text-blue-800 text-base mb-1">{event.summary}</p>
-                      <p className="text-sm text-blue-700">{startTime} - {endTime}</p>
-                      {event.description && <p className="text-xs text-blue-600 mt-1">{event.description}</p>}
+                    <li key={index} className="pb-2 border-b border-border last:border-b-0">
+                      <p className="font-semibold text-foreground text-base mb-1">{event.summary}</p>
+                      <p className="text-sm text-muted-foreground">{startTime} - {endTime}</p>
+                      {event.description && <p className="text-xs text-muted-foreground mt-1">{event.description}</p>}
                     </li>
                   );
                 })}
@@ -275,7 +288,7 @@ const InputArea = () => {
             <div className="flex justify-center">
               <button
                 onClick={handleDismissMessage}
-                className="w-full sm:w-auto px-6 py-3 bg-gray-200 text-gray-800 font-bold rounded-lg shadow-md hover:bg-gray-300 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-opacity-75"
+                className="w-full sm:w-auto px-6 py-3 bg-secondary text-foreground font-bold rounded-xl shadow-md hover:bg-muted-foreground transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-border focus:ring-opacity-75"
               >
                 Close
               </button>
@@ -283,47 +296,78 @@ const InputArea = () => {
           </div>
         </div>
       )}
-      {/* Input Area */}
-      <div className="relative w-full max-w-md flex items-center bg-gray-100 rounded-lg shadow-sm focus-within:ring-2 focus-within:ring-blue-500">
-        <textarea
-          className="w-full p-3 pr-24 bg-transparent rounded-lg resize-none outline-none text-gray-800 placeholder-gray-500 box-border"
-          placeholder="Type your event or speak..."
-          rows="1"
-          style={{ minHeight: '48px', maxHeight: '120px' }}
-          value={message}
-          onChange={handleInputChange}
-        ></textarea>
-        <div className="absolute right-3 flex items-center space-x-2">
-          {message && (
-            <button
-              onClick={handleSendMessage}
-              className="p-2 text-blue-600 hover:text-blue-800 transition-colors duration-200 focus:outline-none"
-            >
-              <FaPaperPlane className="text-xl" />
-            </button>
-          )}
+
+      {/* Collapsed/Expanded Input Area */}
+      {!isInputExpanded && (
+        <button
+          onClick={handleExpandInput}
+          className={`p-4 rounded-full bg-primary text-primary-foreground shadow-lg 
+            transition-all duration-300 ease-in-out transform hover:scale-110 
+            ${isSpeechRecognitionSupported ? '' : 'bg-muted-foreground cursor-not-allowed'}
+          `}
+          disabled={!isSpeechRecognitionSupported}
+        >
           {isSpeechRecognitionSupported ? (
-            <button
-              onClick={toggleRecording}
-              className={`p-2 ${isRecording ? 'text-red-500 hover:text-red-700' : 'text-gray-600 hover:text-blue-500'} transition-colors duration-200 focus:outline-none`}
-            >
-              {isRecording ? <FaStopCircle className="text-xl" /> : <FaMicrophone className="text-xl" />}
-            </button>
+            <FaMicrophone className="text-2xl" />
           ) : (
             <div className="relative group">
-              <button
-                className="p-2 text-gray-400 cursor-not-allowed"
-                disabled
-              >
-                <FaMicrophone className="text-xl" />
-              </button>
-              <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 text-sm text-white bg-gray-700 rounded-md whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+              <FaMicrophone className="text-2xl" />
+              <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 text-sm text-primary-foreground bg-foreground rounded-md whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
                 Voice input not supported in this browser
               </span>
             </div>
           )}
+        </button>
+      )}
+
+      {isInputExpanded && (
+        <div className="relative w-full flex items-center bg-card rounded-2xl shadow-sm focus-within:ring-2 focus-within:ring-primary border border-border">
+          <textarea
+            className="w-full p-3 pr-32 bg-transparent rounded-lg resize-none outline-none text-foreground placeholder-muted-foreground box-border"
+            placeholder="Type your event or speak..."
+            rows="1"
+            style={{ minHeight: '48px', maxHeight: '120px' }}
+            value={message}
+            onChange={handleInputChange}
+          ></textarea>
+          <div className="absolute right-12 flex items-center space-x-2">
+            {message && (
+              <button
+                onClick={() => handleSendMessage()}
+                className="p-2 text-primary hover:text-blue-800 transition-colors duration-200 focus:outline-none"
+              >
+                <FaPaperPlane className="text-xl" />
+              </button>
+            )}
+            {isSpeechRecognitionSupported ? (
+              <button
+                onClick={toggleRecording}
+                className={`p-2 ${isRecording ? 'text-destructive hover:text-red-700' : 'text-muted-foreground hover:text-primary'} transition-colors duration-200 focus:outline-none`}
+              >
+                {isRecording ? <FaStopCircle className="text-xl" /> : <FaMicrophone className="text-xl" />}
+              </button>
+            ) : (
+              <div className="relative group">
+                <button
+                  className="p-2 text-muted-foreground cursor-not-allowed"
+                  disabled
+                >
+                  <FaMicrophone className="text-xl" />
+                </button>
+                <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 text-sm text-primary-foreground bg-foreground rounded-md whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+                  Voice input not supported in this browser
+                </span>
+              </div>
+            )}
+          </div>
+          <button
+            onClick={handleCollapseInput}
+            className="absolute top-1/2 -translate-y-1/2 right-2 p-1 text-muted-foreground hover:text-foreground focus:outline-none"
+          >
+            <FaTimes className="text-xl" />
+          </button>
         </div>
-      </div>
+      )}
     </div>
   );
 };
