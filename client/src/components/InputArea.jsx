@@ -107,9 +107,9 @@ const InputArea = () => {
       if (response.data.success) {
         if (response.data.calendarLinks) {
           const linksHtml = response.data.calendarLinks.map((link, index) =>
-            `<a key=${index} href="${link}" target="_blank" rel="noopener noreferrer" class="text-blue-500 hover:underline">${link}</a>`
+            `<a key=${index} href="${link}" target="_blank" rel="noopener noreferrer" class="text-blue-500 hover:underline">Event Link ${index + 1}</a>`
           ).join('<br/>');
-          setDisplayMessage(`Event(s) created! Check your Google Calendar.<br/>Links: ${linksHtml}`);
+          setDisplayMessage(`Event(s) created! Check your Google Calendar.<br/>${response.data.calendarLinks.length > 1 ? 'Links' : 'Link'}: ${linksHtml}`);
           setMessageType('success');
         } else if (response.data.events) {
           setCalendarEvents(response.data.events);
