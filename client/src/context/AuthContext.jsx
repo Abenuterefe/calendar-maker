@@ -11,7 +11,7 @@ export const AuthProvider = ({ children }) => {
   const isRefreshing = useRef(false); // To prevent multiple refresh token requests
 
   const CLIENT_URL = import.meta.env.VITE_CLIENT_URL || 'http://localhost:5173'; // From env or config
-  const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000'; // From env or config
+  const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'https://calendar-maker-y0xc.onrender.com'; // From env or config
 
   const checkAuthentication = useCallback(async () => {
     const storedToken = localStorage.getItem('jwtToken');
