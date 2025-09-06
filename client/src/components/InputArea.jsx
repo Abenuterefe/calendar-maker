@@ -100,9 +100,10 @@ const InputArea = () => {
           setDisplayMessage(`Event(s) created!<br/>${linksHtml}`);
           setMessageType('success');
         } else if (response.data.events) {
+          // ✅ show full event modal instead of just message
           setCalendarEvents(response.data.events);
-          setDisplayMessage(response.data.feedback || `Found ${response.data.events.length} events.`);
-          setMessageType('success');
+          setDisplayMessage(null);
+          setMessageType(null);
         } else {
           setDisplayMessage(response.data.feedback || "Request processed successfully.");
           setMessageType('success');
@@ -161,7 +162,7 @@ const InputArea = () => {
       recognitionRef.current.stop();
     }
     setMessage('');
-    setDisplayMessage(null); // 🔥 clear error/success/warning when collapsing
+    setDisplayMessage(null); 
     setMessageType(null);
   };
 
@@ -189,12 +190,52 @@ const InputArea = () => {
         </div>
       )}
 
+      {/* Calendar Events Modal */}
+      {calendarEvents.length > 0 && (
+        <div className="fixed inset-0 bg-background bg-opacity-80 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-card rounded-2xl shadow-2xl p-6 sm:p-8 max-w-lg w-full relative border border-border">
+            <button
+              onClick={() => { setCalendarEvents([]); }}
+              className="absolute top-4 right-4 text-muted-foreground hover:text-foreground transition-colors text-2xl"
+            >
+              &times;
+            </button>
+            <div className="text-center mb-6">
+              <h2 className="text-2xl font-bold text-primary mb-2">Your Upcoming Events</h2>
+            </div>
+            <div className="mb-6 p-4 bg-secondary rounded-xl border border-border max-h-[60vh] overflow-y-auto">
+              <ul className="list-none text-left space-y-4">
+                {calendarEvents.map((event, index) => {
+                  const startTime = new Date(event.start.dateTime || event.start.date).toLocaleString();
+                  const endTime = new Date(event.end.dateTime || event.end.date).toLocaleString();
+                  return (
+                    <li key={index} className="pb-2 border-b border-border last:border-b-0">
+                      <p className="font-semibold text-foreground">{event.summary}</p>
+                      <p className="text-sm text-muted-foreground">{startTime} - {endTime}</p>
+                      {event.description && <p className="text-xs text-muted-foreground">{event.description}</p>}
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+            <div className="flex justify-center">
+              <button
+                onClick={() => setCalendarEvents([])}
+                className="px-6 py-2 bg-secondary text-foreground rounded-lg hover:bg-muted-foreground"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Collapsed/Expanded Input Area */}
       {!isInputExpanded && (
         <button
           onClick={handleExpandInput}
           className={`p-4 rounded-full bg-primary text-primary-foreground shadow-lg 
-            transition-all duration-300 ease-in-out transform hover:scale-110 
+            transition-all duration-300 transform hover:scale-110 
             ${isSpeechRecognitionSupported ? '' : 'bg-muted-foreground cursor-not-allowed'}
           `}
           disabled={!isSpeechRecognitionSupported}
@@ -217,7 +258,7 @@ const InputArea = () => {
             {message && (
               <button
                 onClick={() => handleSendMessage()}
-                className="p-2 text-primary hover:text-blue-800 transition-colors duration-200 focus:outline-none"
+                className="p-2 text-primary hover:text-blue-800 transition-colors"
               >
                 <FaPaperPlane className="text-xl" />
               </button>
@@ -225,7 +266,7 @@ const InputArea = () => {
             {isSpeechRecognitionSupported && (
               <button
                 onClick={toggleRecording}
-                className={`p-2 ${isRecording ? 'text-destructive hover:text-red-700' : 'text-muted-foreground hover:text-primary'} transition-colors duration-200 focus:outline-none`}
+                className={`p-2 ${isRecording ? 'text-destructive hover:text-red-700' : 'text-muted-foreground hover:text-primary'} transition-colors`}
               >
                 {isRecording ? <FaStopCircle className="text-xl" /> : <FaMicrophone className="text-xl" />}
               </button>
@@ -233,7 +274,7 @@ const InputArea = () => {
           </div>
           <button
             onClick={handleCollapseInput}
-            className="absolute top-1/2 -translate-y-1/2 right-2 p-1 text-muted-foreground hover:text-foreground focus:outline-none"
+            className="absolute top-1/2 -translate-y-1/2 right-2 p-1 text-muted-foreground hover:text-foreground"
           >
             <FaTimes className="text-xl" />
           </button>
